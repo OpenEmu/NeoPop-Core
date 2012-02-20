@@ -38,7 +38,7 @@
 
 @class GameDocument;
 
-@interface NGPGameEmu : OEGameCore
+@interface NGPGameCore : OEGameCore
 {
     GameDocument *parent;
     NSLock       *soundLock;
