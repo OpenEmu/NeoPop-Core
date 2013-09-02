@@ -177,7 +177,6 @@ static OERingBuffer *dacBuffer;
     free(dacBuf);
 }
 
-
 - (void)setupEmulation
 {
     reset();
