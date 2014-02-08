@@ -184,7 +184,7 @@ static OERingBuffer *dacBuffer;
     NSLog(@"Setup done for neopop");
 }
 
-- (BOOL)loadFileAtPath:(NSString *)path
+- (BOOL)loadFileAtPath:(NSString *)path error:(NSError **)error
 {
     pathToFile = [[path stringByDeletingLastPathComponent] copy];
     gPathToFile = pathToFile;
