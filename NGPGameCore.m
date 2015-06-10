@@ -269,6 +269,52 @@ static OERingBuffer *dacBuffer;
     return YES;
 }
 
+- (NSData *)serializeStateWithError:(NSError **)outError
+{
+    NSUInteger length = state_length();
+    void *data = malloc(length);
+    
+    if(state_serialize(data, length))
+    {
+        return [NSData dataWithBytesNoCopy:data length:length];
+    }
+    else
+    {
+        if(outError)
+        {
+            *outError = [NSError errorWithDomain:OEGameCoreErrorDomain
+                                            code:OEGameCoreCouldNotSaveStateError
+                                        userInfo:@{
+                                                   NSLocalizedDescriptionKey : @"Save state data could not be written",
+                                                   NSLocalizedRecoverySuggestionErrorKey : @"The emulator could not write the state data."
+                                                   }];
+        }
+        
+        return nil;
+    }
+}
+
+- (BOOL)deserializeState:(NSData *)state withError:(NSError **)outError
+{
+    if(state_deserialize([state bytes], [state length]))
+    {
+        return YES;
+    }
+    else
+    {
+        if(outError)
+        {
+            *outError = [NSError errorWithDomain:OEGameCoreErrorDomain
+                                            code:OEGameCoreCouldNotLoadStateError
+                                        userInfo:@{
+                                                   NSLocalizedDescriptionKey : @"The save state data could not be read"
+                                                   }];
+        }
+        
+        return NO;
+    }
+}
+
 /* NeoPop callbacks and internal functions */
 
 static BOOL rom_load(const char *filename)
