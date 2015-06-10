@@ -22,6 +22,18 @@
 	<string>OEGameCoreController</string>
 	<key>OEGameCoreClass</key>
 	<string>NGPGameCore</string>
+	<key>OEGameCoreOptions</key>
+	<dict>
+		<key>openemu.system.ngp</key>
+		<dict>
+			<key>OEGameCoreRewindBufferSeconds</key>
+			<integer>1800</integer>
+			<key>OEGameCoreRewindInterval</key>
+			<integer>0</integer>
+			<key>OEGameCoreSupportsRewinding</key>
+			<true/>
+		</dict>
+	</dict>
 	<key>OEGameCorePlayerCount</key>
 	<string>2</string>
 	<key>OEProjectURL</key>
