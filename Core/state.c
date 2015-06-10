@@ -210,4 +210,153 @@ static void read_state_0050(const char *filename)
 	}
 }
 
+
+
 //=============================================================================
+
+//-----------------------------------------------------------------------------
+// state_length()
+//-----------------------------------------------------------------------------
+_u64 state_length()
+{
+    return sizeof(NEOPOPSTATE0050);
+}
+
+//=============================================================================
+
+//-----------------------------------------------------------------------------
+// state_serialize()
+//-----------------------------------------------------------------------------
+BOOL state_serialize(void *buffer, _u64 length)
+{
+    if (!buffer || length < sizeof(NEOPOPSTATE0050))
+    {
+        return FALSE;
+    }
+    
+    NEOPOPSTATE0050	*state = (NEOPOPSTATE0050 *)buffer;
+    int i,j;
+    
+    //Build a state description
+    state->valid_state_id = 0x0050;
+    memcpy(&state->header, rom_header, sizeof(RomHeader));
+    
+    state->eepromStatusEnable = eepromStatusEnable;
+    
+    //TLCS-900h Registers
+    state->pc = pc;
+    state->sr = sr;
+    state->f_dash = f_dash;
+    
+    for (i = 0; i < 4; i++)
+    {
+        state->gpr[i] = gpr[i];
+        for (j = 0; j < 4; j++)
+            state->gprBank[i][j] = gprBank[i][j];
+    }
+    
+    //Z80 Registers
+    memcpy(&state->Z80_regs, &Z80_regs, sizeof(Z80));
+    
+    //Sound Chips
+    memcpy(&state->toneChip, &toneChip, sizeof(SoundChip));
+    memcpy(&state->noiseChip, &noiseChip, sizeof(SoundChip));
+    
+    //Memory
+    memcpy(&state->ram, ram, 0xC000);
+    
+    //Timers
+    state->timer_hint = timer_hint;
+    
+    for (i = 0; i < 4; i++)	//Up-counters
+        state->timer[i] = timer[i];
+    
+    state->timer_clock0 = timer_clock0;
+    state->timer_clock1 = timer_clock1;
+    state->timer_clock2 = timer_clock2;
+    state->timer_clock3 = timer_clock3;
+    
+    //DMA
+    for (i = 0; i < 4; i++)
+    {
+        state->dmaS[i] = dmaS[i];
+        state->dmaD[i] = dmaD[i];
+        state->dmaC[i] = dmaC[i];
+        state->dmaM[i] = dmaM[i];
+    }
+    
+    return TRUE;
+}
+
+//=============================================================================
+
+//-----------------------------------------------------------------------------
+// state_deserialize()
+//-----------------------------------------------------------------------------
+BOOL state_deserialize(const void *buffer, _u64 length)
+{
+    if (!buffer || length < sizeof(NEOPOPSTATE0050))
+    {
+        return FALSE;
+    }
+    
+    NEOPOPSTATE0050 *state = (NEOPOPSTATE0050 *)buffer;
+    int i,j;
+    
+    //Verify correct rom...
+    if (memcmp(rom_header, &state->header, sizeof(RomHeader)) != 0)
+    {
+        return FALSE;
+    }
+    
+    //Apply state description
+    reset();
+    
+    eepromStatusEnable = state->eepromStatusEnable;
+    
+    //TLCS-900h Registers
+    pc = state->pc;
+    sr = state->sr;				changedSP();
+    f_dash = state->f_dash;
+    
+    eepromStatusEnable = state->eepromStatusEnable;
+    
+    for (i = 0; i < 4; i++)
+    {
+        gpr[i] = state->gpr[i];
+        for (j = 0; j < 4; j++)
+            gprBank[i][j] = state->gprBank[i][j];
+    }
+    
+    //Timers
+    timer_hint = state->timer_hint;
+    
+    for (i = 0; i < 4; i++)	//Up-counters
+        timer[i] = state->timer[i];
+    
+    timer_clock0 = state->timer_clock0;
+    timer_clock1 = state->timer_clock1;
+    timer_clock2 = state->timer_clock2;
+    timer_clock3 = state->timer_clock3;
+    
+    //Z80 Registers
+    memcpy(&Z80_regs, &state->Z80_regs, sizeof(Z80));
+    
+    //Sound Chips
+    memcpy(&toneChip, &state->toneChip, sizeof(SoundChip));
+    memcpy(&noiseChip, &state->noiseChip, sizeof(SoundChip));
+    
+    //DMA
+    for (i = 0; i < 4; i++)
+    {
+        dmaS[i] = state->dmaS[i];
+        dmaD[i] = state->dmaD[i];
+        dmaC[i] = state->dmaC[i];
+        dmaM[i] = state->dmaM[i];
+    }
+    
+    //Memory
+    memcpy(ram, &state->ram, 0xC000);
+    
+    return TRUE;
+}

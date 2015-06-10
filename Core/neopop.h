@@ -361,6 +361,10 @@ RomHeader;
 	void state_restore(const char *filename);
 	void state_store(const char *filename);
 
+    _u64 state_length();
+    BOOL state_serialize(void *buffer, _u64 length);
+    BOOL state_deserialize(const void *buffer, _u64 length);
+
 		//=========================================
 
 /*! Reads a byte from the other system. If no data is available or no
