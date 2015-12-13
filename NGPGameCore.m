@@ -257,62 +257,48 @@ static OERingBuffer *dacBuffer;
     return 2;
 }
 
-- (BOOL)saveStateToFileAtPath:(NSString *)fileName
+- (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
-    state_store([fileName UTF8String]);
-    return YES;
+    state_store(fileName.fileSystemRepresentation);
+    block(YES, nil);
 }
 
-- (BOOL)loadStateFromFileAtPath:(NSString *)fileName
+- (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
-    state_restore([fileName UTF8String]);
-    return YES;
+    state_restore(fileName.fileSystemRepresentation);
+    block(YES, nil);
 }
 
 - (NSData *)serializeStateWithError:(NSError **)outError
 {
     NSUInteger length = state_length();
-    void *data = malloc(length);
-    
-    if(state_serialize(data, length))
-    {
-        return [NSData dataWithBytesNoCopy:data length:length];
+    NSMutableData *data = [NSMutableData dataWithLength:length];
+
+    if(state_serialize(data.mutableBytes, length))
+        return data;
+
+    if(outError) {
+        *outError = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotSaveStateError userInfo:@{
+            NSLocalizedDescriptionKey : @"Save state data could not be written",
+            NSLocalizedRecoverySuggestionErrorKey : @"The emulator could not write the state data."
+        }];
     }
-    else
-    {
-        if(outError)
-        {
-            *outError = [NSError errorWithDomain:OEGameCoreErrorDomain
-                                            code:OEGameCoreCouldNotSaveStateError
-                                        userInfo:@{
-                                                   NSLocalizedDescriptionKey : @"Save state data could not be written",
-                                                   NSLocalizedRecoverySuggestionErrorKey : @"The emulator could not write the state data."
-                                                   }];
-        }
-        
-        return nil;
-    }
+
+    return nil;
 }
 
 - (BOOL)deserializeState:(NSData *)state withError:(NSError **)outError
 {
     if(state_deserialize([state bytes], [state length]))
-    {
         return YES;
+
+    if(outError) {
+        *outError = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:@{
+            NSLocalizedDescriptionKey : @"The save state data could not be read"
+        }];
     }
-    else
-    {
-        if(outError)
-        {
-            *outError = [NSError errorWithDomain:OEGameCoreErrorDomain
-                                            code:OEGameCoreCouldNotLoadStateError
-                                        userInfo:@{
-                                                   NSLocalizedDescriptionKey : @"The save state data could not be read"
-                                                   }];
-        }
-        
-        return NO;
-    }
+
+    return NO;
 }
 
 /* NeoPop callbacks and internal functions */
