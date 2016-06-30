@@ -27,7 +27,7 @@
 		<key>openemu.system.ngp</key>
 		<dict>
 			<key>OEGameCoreRewindBufferSeconds</key>
-			<integer>1800</integer>
+			<integer>60</integer>
 			<key>OEGameCoreRewindInterval</key>
 			<integer>0</integer>
 			<key>OEGameCoreSupportsRewinding</key>
